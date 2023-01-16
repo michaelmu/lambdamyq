@@ -1,3 +1,4 @@
+# https://docs.timescale.com/timescaledb/latest/tutorials/aws-lambda/continuous-deployment/
 name: deploy to lambda
 on:
   # Trigger the workflow on push or pull request,
@@ -19,5 +20,5 @@ jobs:
           aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws_region: ${{ secrets.AWS_REGION }}
-          function_name: lambda_handler
+          function_name: myq_control
           source: myq.py
