@@ -55,7 +55,6 @@ async def get_garagedoor_state():
         account = api.accounts[MYQ_ACCOUNT]
         return MyQGaragedoor(garage_json, account, None).device_state
 
-
 async def open_garagedoor():
     async with ClientSession() as websession:
         api = await login(MYQ_EMAIL, MYQ_PASSWORD, websession)
@@ -77,20 +76,21 @@ def lambda_handler(event, context):
     log = {}
     if "body" in event.keys():
         log["inside_body"] = "true"
-        event_params = urllib.parse.parse_qs(base64.b64decode(event.get("body")))
-        log["event_params"] = event_params
-        if event_params.get("mode", MODE_NONTEST) and event_params.get("pin", "unknown") == PIN:
+        raw_params = base64.b64decode(event.get("body")).decode('utf-8')
+        params = urllib.parse.parse_qs(raw_params)
+        log["params"] = raw_params
+        if params.get("mode", MODE_NONTEST) and params.get("pin", "unknown") == PIN:
             log["inside_exec"] = "true"
             # Only allow open/close in non-test mode with correct pin
-            if event_params.get("action", "unknown") == ACTION_OPEN:
+            if params.get("action", "unknown") == ACTION_OPEN:
                 asyncio.get_event_loop().run_until_complete(open_garagedoor())
-            if event_params.get("action", "unknown") == ACTION_CLOSE:
+            if params.get("action", "unknown") == ACTION_CLOSE:
                 asyncio.get_event_loop().run_until_complete(close_garagedoor())
     state = asyncio.get_event_loop().run_until_complete(get_garagedoor_state())
     return {
         'statusCode': 200,
-        'body': json.dumps(
-            {"current_time": current_time,  
+        'body': json.dumps({
+            "current_time": current_time,  
             "state": state, 
             "event": json.dumps(event), 
             "log": json.dumps(log),

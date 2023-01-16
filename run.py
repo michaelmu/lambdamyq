@@ -11,6 +11,7 @@ class Context:
 
 
 if __name__ == "__main__":
-    event = {"action": ACTION_CLOSE, "mode": MODE_TEST}
+    # action=close&mode=nontest_mode&pin=3338
+    event = {"body": "YWN0aW9uPWNsb3NlJm1vZGU9bm9udGVzdF9tb2RlJnBpbj0zMzM4"}
     response = lambda_handler(event, Context("Sample ARN"))
     print(response)
