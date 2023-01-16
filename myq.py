@@ -75,7 +75,7 @@ def lambda_handler(event, context):
     current_time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     # decode our parameters
     if "body" in event.keys():
-        event_params = urllib.parse(base64.decode(event.get("body")))
+        event_params = urllib.parse.parse_qs(base64.decode(event.get("body")))
         if event.get("mode", MODE_NONTEST) and event.get("pin", "unknown") == PIN:
             # Only allow open/close in non-test mode with correct pin
             if event.get("action", "unknown") == ACTION_OPEN:
