@@ -1,5 +1,7 @@
 import datetime
 import json
+import base64
+import urllib.parse
 import asyncio
 from pymyq import login
 from pymyq.api import API
@@ -71,12 +73,15 @@ async def close_garagedoor():
 
 def lambda_handler(event, context):
     current_time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    if event.get("mode", MODE_NONTEST) and event.get("pin", "unknown") == PIN:
-        # Only allow open/close in non-test mode with correct pin
-        if event.get("action", "unknown") == ACTION_OPEN:
-            asyncio.get_event_loop().run_until_complete(open_garagedoor())
-        if event.get("action", "unknown") == ACTION_CLOSE:
-            asyncio.get_event_loop().run_until_complete(close_garagedoor())
+    # decode our parameters
+    if "body" in event.keys():
+        event_params = urllib.parse(base64.decode(event.get("body")))
+        if event.get("mode", MODE_NONTEST) and event.get("pin", "unknown") == PIN:
+            # Only allow open/close in non-test mode with correct pin
+            if event.get("action", "unknown") == ACTION_OPEN:
+                asyncio.get_event_loop().run_until_complete(open_garagedoor())
+            if event.get("action", "unknown") == ACTION_CLOSE:
+                asyncio.get_event_loop().run_until_complete(close_garagedoor())
     state = asyncio.get_event_loop().run_until_complete(get_garagedoor_state())
     return {
         'statusCode': 200,
