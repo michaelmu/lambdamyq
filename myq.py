@@ -6,7 +6,6 @@ from pymyq.api import API
 from pymyq.account import MyQAccount
 from pymyq.garagedoor import MyQGaragedoor
 from aiohttp import ClientSession
-# from pymyq import MyQGaragedoor
 
 STATE_CLOSED = "closed"
 STATE_CLOSING = "closing"
@@ -72,12 +71,11 @@ async def close_garagedoor():
 
 def lambda_handler(event, context):
     current_time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    event_parsed = json.loads(event)
-    if event_parsed.get("mode", MODE_NONTEST) and event_parsed.get("pin", "unknown") == PIN:
+    if event.get("mode", MODE_NONTEST) and event.get("pin", "unknown") == PIN:
         # Only allow open/close in non-test mode with correct pin
-        if event_parsed.get("action", "unknown") == ACTION_OPEN:
+        if event.get("action", "unknown") == ACTION_OPEN:
             asyncio.get_event_loop().run_until_complete(open_garagedoor())
-        if event_parsed.get("action", "unknown") == ACTION_CLOSE:
+        if event.get("action", "unknown") == ACTION_CLOSE:
             asyncio.get_event_loop().run_until_complete(close_garagedoor())
     state = asyncio.get_event_loop().run_until_complete(get_garagedoor_state())
     return {
