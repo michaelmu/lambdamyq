@@ -74,9 +74,13 @@ async def close_garagedoor():
 def lambda_handler(event, context):
     current_time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     # decode our parameters
+    log = {}
     if "body" in event.keys():
+        log["inside_body"] = "true"
         event_params = urllib.parse.parse_qs(base64.b64decode(event.get("body")))
+        log["event_params"] = event_params
         if event_params.get("mode", MODE_NONTEST) and event_params.get("pin", "unknown") == PIN:
+            log["inside_exec"] = "true"
             # Only allow open/close in non-test mode with correct pin
             if event_params.get("action", "unknown") == ACTION_OPEN:
                 asyncio.get_event_loop().run_until_complete(open_garagedoor())
@@ -85,6 +89,6 @@ def lambda_handler(event, context):
     state = asyncio.get_event_loop().run_until_complete(get_garagedoor_state())
     return {
         'statusCode': 200,
-        'body': json.dumps({"current_time": current_time,  "state": state, "event": json.dumps(event)})
+        'body': json.dumps({"current_time": current_time,  "state": state, "event": json.dumps(event), "log": json.dumps(log)})
     }
     
