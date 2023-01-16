@@ -89,8 +89,12 @@ def lambda_handler(event, context):
     state = asyncio.get_event_loop().run_until_complete(get_garagedoor_state())
     return {
         'statusCode': 200,
-        'body': json.dumps({"current_time": current_time}),  
-        "state": state, "event": json.dumps(event), 
-        "log": json.dumps(log)
-        }
+        'body': json.dumps(
+            {"current_time": current_time,  
+            "state": state, "event": json.dumps(event), 
+            "log": json.dumps(log),
+            }
+        )
+    }
+        
     
