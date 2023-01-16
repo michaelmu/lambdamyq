@@ -76,11 +76,11 @@ def lambda_handler(event, context):
     # decode our parameters
     if "body" in event.keys():
         event_params = urllib.parse.parse_qs(base64.b64decode(event.get("body")))
-        if event.get("mode", MODE_NONTEST) and event.get("pin", "unknown") == PIN:
+        if event_params.get("mode", MODE_NONTEST) and event_params.get("pin", "unknown") == PIN:
             # Only allow open/close in non-test mode with correct pin
-            if event.get("action", "unknown") == ACTION_OPEN:
+            if event_params.get("action", "unknown") == ACTION_OPEN:
                 asyncio.get_event_loop().run_until_complete(open_garagedoor())
-            if event.get("action", "unknown") == ACTION_CLOSE:
+            if event_params.get("action", "unknown") == ACTION_CLOSE:
                 asyncio.get_event_loop().run_until_complete(close_garagedoor())
     state = asyncio.get_event_loop().run_until_complete(get_garagedoor_state())
     return {
