@@ -47,9 +47,9 @@ def get_secrets():
         raise e
     # Decrypts secret using the associated KMS key.
     return {
-        'email': get_secret_value_response['myq_email'],
-        'password': get_secret_value_response['myq_password'],
-        'pin': get_secret_value_response['myq_pin'],
+        'email': get_secret_value_response['SecretString']['myq_email'],
+        'password': get_secret_value_response['SecretString']['myq_password'],
+        'pin': get_secret_value_response['SecretString']['myq_pin'],
      }
 
 async def get_devices(api: API):
