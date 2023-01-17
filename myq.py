@@ -91,6 +91,8 @@ async def close_garagedoor():
 
 def lambda_handler(event, context):
     current_time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    print(get_secrets()['email'])
+    print(get_secrets()['password'])
     # decode our parameters
     if "body" in event.keys():
         raw_params = base64.b64decode(event.get("body")).decode('utf-8')
