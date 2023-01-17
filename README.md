@@ -10,11 +10,12 @@ Create a requirements.txt file with:
 aiohttp
 multidict
 pymyq
+boto3
 ```
 
 Then combine it together in a folder:
 ```
-pip3 install -r requirements.txt --target=/Users/musson/Downloads/lambdamyq_deps/package.zip
+pip3 install -r requirements.txt --target=~/Downloads/lambdamyq_deps/package2.zip
 ```
 
 Make sure you have the contents in a "python" folder.
