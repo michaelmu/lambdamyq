@@ -3,6 +3,8 @@ import json
 import base64
 import urllib.parse
 import asyncio
+import boto3
+from botocore.exceptions import ClientError
 from pymyq import login
 from pymyq.api import API
 from pymyq.account import MyQAccount
@@ -18,9 +20,6 @@ STATE_TRANSITION = "transition"
 STATE_AUTOREVERSE = "autoreverse"
 STATE_UNKNOWN = "unknown"
 
-MYQ_EMAIL = "michael.musson@gmail.com"
-MYQ_PASSWORD = "myq2023FTW!"
-
 GARAGE_DOOR_OPENER = "CG0846A0A31B"
 MYQ_ACCOUNT = "ef50064e-60cb-4ab4-a794-2e986e251cec"
 
@@ -31,7 +30,30 @@ ACTION_GETSTATE = "get_state"
 MODE_TEST = "test_mode"
 MODE_NONTEST = "nontest_mode"
 
-PIN = "3338"
+def get_secrets():
+    secret_name = "myq_credentials"
+    region_name = "us-east-1"
+
+    # Create a Secrets Manager client
+    session = boto3.session.Session()
+    client = session.client(
+        service_name='secretsmanager',
+        region_name=region_name
+    )
+
+    try:
+        get_secret_value_response = client.get_secret_value(
+            SecretId=secret_name
+        )
+    except ClientError as e:
+        raise e
+
+    # Decrypts secret using the associated KMS key.
+    return {
+        'email': get_secret_value_response['myq_email'],
+        'password': get_secret_value_response['myq_password'],
+        'pin': get_secret_value_response['myq_pin'],
+     }
 
 async def get_devices(api: API):
     await api.update_device_info()
@@ -50,22 +72,21 @@ async def get_garagedoor_json(api: API):
 
 async def get_garagedoor_state():
     async with ClientSession() as websession:
-        api = await login(MYQ_EMAIL, MYQ_PASSWORD, websession)
+        api = await login(get_secrets()['email'], get_secrets()['password'], websession)
         garage_json = await get_garagedoor_json(api)
         account = api.accounts[MYQ_ACCOUNT]
         return MyQGaragedoor(garage_json, account, None).device_state
 
 async def open_garagedoor():
     async with ClientSession() as websession:
-        api = await login(MYQ_EMAIL, MYQ_PASSWORD, websession)
+        api = await login(get_secrets()['email'], get_secrets()['password'], websession)
         garage_json = await get_garagedoor_json(api)
         account = api.accounts[MYQ_ACCOUNT]
         await MyQGaragedoor(garage_json, account, None).open()
 
-
 async def close_garagedoor():
     async with ClientSession() as websession:
-        api = await login(MYQ_EMAIL, MYQ_PASSWORD, websession)
+        api = await login(get_secrets()['email'], get_secrets()['password'], websession)
         garage_json = await get_garagedoor_json(api)
         account = api.accounts[MYQ_ACCOUNT]
         await MyQGaragedoor(garage_json, account, None).close()
@@ -77,7 +98,7 @@ def lambda_handler(event, context):
         raw_params = base64.b64decode(event.get("body")).decode('utf-8')
         # Use qsl to only get one value per param key
         params = dict(urllib.parse.parse_qsl(raw_params))
-        if params.get("mode", MODE_NONTEST) and params.get("pin", "unknown") == PIN:
+        if params.get("mode", MODE_NONTEST) and params.get("pin", "unknown") == get_secrets()['pin']:
             # Only allow open/close in non-test mode with correct pin
             if params.get("action", "unknown") == ACTION_OPEN:
                 asyncio.get_event_loop().run_until_complete(open_garagedoor())
