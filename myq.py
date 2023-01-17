@@ -45,11 +45,12 @@ def get_secrets():
         )
     except ClientError as e:
         raise e
+    secrets = json.loads(get_secret_value_response['SecretString'])
     # Decrypts secret using the associated KMS key.
     return {
-        'email': get_secret_value_response['SecretString']['myq_email'],
-        'password': get_secret_value_response['SecretString']['myq_password'],
-        'pin': get_secret_value_response['SecretString']['myq_pin'],
+        'email': secrets['myq_email'],
+        'password': secrets['myq_password'],
+        'pin': secrets['myq_pin'],
      }
 
 async def get_devices(api: API):
